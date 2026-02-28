@@ -1,0 +1,546 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard{% endblock %}
+
+{% block extra_css %}
+<style>
+    .upload-section { padding: 30px; }
+    
+    .upload-card {
+        border-radius: 20px;
+        padding: 40px 20px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        border: 3px solid transparent;
+    }
+    
+    .upload-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
+    }
+    
+    .upload-card i { font-size: 3rem; margin-bottom: 15px; }
+    .upload-card h4 { font-size: 1.3rem; margin-bottom: 10px; }
+    
+    .student-upload {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+    
+    .teacher-upload {
+        background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        color: white;
+    }
+    
+    .admin-upload {
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        color: white;
+    }
+    
+    .upload-icon {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 20px;
+        background: rgba(255,255,255,0.2);
+    }
+    
+    .modal-student .modal-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+    
+    .modal-teacher .modal-header {
+        background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        color: white;
+    }
+    
+    .modal-admin .modal-header {
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        color: white;
+    }
+    
+    .file-drop-area {
+        border: 2px dashed #ccc;
+        border-radius: 15px;
+        padding: 40px;
+        text-align: center;
+        cursor: pointer;
+    }
+    
+    .file-drop-area:hover { border-color: #667eea; background: #f8f9ff; }
+    .file-drop-area i { font-size: 3rem; color: #667eea; margin-bottom: 15px; }
+    
+    .info-box {
+        background: #f8f9fa;
+        border-radius: 15px;
+        padding: 20px;
+        margin-top: 20px;
+    }
+    
+    .info-box ul { margin: 0; padding-left: 20px; }
+    .info-box li { color: #666; margin-bottom: 8px; }
+    
+    /* View Data Section */
+    .data-section {
+        margin-bottom: 30px;
+    }
+    
+    .data-card {
+        border-radius: 15px;
+        overflow: hidden;
+        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+    }
+    
+    .data-header {
+        padding: 20px;
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+    
+    .data-header i { font-size: 1.5rem; }
+    .data-header h4 { margin: 0; }
+    
+    .student-data .data-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+    
+    .teacher-data .data-header {
+        background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+    }
+    
+    .admin-data .data-header {
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    }
+    
+    .data-body {
+        padding: 20px;
+        background: white;
+    }
+    
+    .data-count {
+        background: rgba(255,255,255,0.2);
+        padding: 5px 15px;
+        border-radius: 20px;
+        font-size: 0.9rem;
+    }
+    
+    .table-container {
+        max-height: 400px;
+        overflow-y: auto;
+    }
+    
+    .table {
+        margin-bottom: 0;
+    }
+    
+    .table th {
+        background: #f8f9fa;
+        font-weight: 600;
+        position: sticky;
+        top: 0;
+    }
+    
+    .empty-data {
+        text-align: center;
+        padding: 40px;
+        color: #999;
+    }
+    
+    .empty-data i {
+        font-size: 3rem;
+        margin-bottom: 15px;
+        opacity: 0.5;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<h2 class="mb-4"><i class="fas fa-user-cog"></i> Admin Dashboard</h2>
+
+<!-- Stats Cards -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card bg-primary text-white">
+            <div class="card-body">
+                <h3>{{ total_students }}</h3>
+                <p>Students</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-success text-white">
+            <div class="card-body">
+                <h3>{{ total_teachers }}</h3>
+                <p>Teachers</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-warning text-white">
+            <div class="card-body">
+                <h3>{{ total_feedbacks }}</h3>
+                <p>Feedbacks</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-info text-white">
+            <div class="card-body">
+                <h3>{{ current_semester }}</h3>
+                <p>Semester</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Tabs -->
+<ul class="nav nav-tabs mb-3">
+    <li class="nav-item">
+        <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#users">
+            <i class="fas fa-users me-2"></i>Manage Users
+        </button>
+    </li>
+    <li class="nav-item">
+        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#upload">
+            <i class="fas fa-file-upload me-2"></i>Upload Data
+        </button>
+    </li>
+    <li class="nav-item">
+        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#view">
+            <i class="fas fa-eye me-2"></i>View Data
+        </button>
+    </li>
+</ul>
+
+<div class="tab-content">
+    <!-- Users Tab -->
+    <div class="tab-pane fade show active" id="users">
+        <div class="card">
+            <div class="card-header"><h5><i class="fas fa-users me-2"></i>All Users</h5></div>
+            <div class="card-body">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Username</th>
+                            <th>Name</th>
+                            <th>Role</th>
+                            <th>Branch/Sem</th>
+                            <th>Subject</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user in all_users %}
+                        <tr>
+                            <td>{{ user.id }}</td>
+                            <td>{{ user.username }}</td>
+                            <td>{{ user.name }}</td>
+                            <td>
+                                <span class="badge bg-{% if user.role=='admin' %}dark{% elif user.role=='teacher' %}success{% else %}primary{% endif %}">
+                                    {{ user.role }}
+                                </span>
+                            </td>
+                            <td>
+                                {% if user.role == 'student' %}
+                                    {{ user.branch or '-' }} - Sem {{ user.semester }}
+                                {% else %} - {% endif %}
+                            </td>
+                            <td>{{ user.subject or '-' }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Upload Tab -->
+    <div class="tab-pane fade" id="upload">
+        <div class="row">
+            <!-- Student Upload -->
+            <div class="col-md-4 mb-4">
+                <div class="upload-card student-upload" data-bs-toggle="modal" data-bs-target="#studentUploadModal">
+                    <div class="upload-icon"><i class="fas fa-user-graduate"></i></div>
+                    <h4>Upload Students</h4>
+                    <p>Import student data</p>
+                </div>
+            </div>
+            
+            <!-- Teacher Upload -->
+            <div class="col-md-4 mb-4">
+                <div class="upload-card teacher-upload" data-bs-toggle="modal" data-bs-target="#teacherUploadModal">
+                    <div class="upload-icon"><i class="fas fa-chalkboard-teacher"></i></div>
+                    <h4>Upload Teachers</h4>
+                    <p>Import teacher data</p>
+                </div>
+            </div>
+            
+            <!-- Admin Upload -->
+            <div class="col-md-4 mb-4">
+                <div class="upload-card admin-upload" data-bs-toggle="modal" data-bs-target="#adminUploadModal">
+                    <div class="upload-icon"><i class="fas fa-user-cog"></i></div>
+                    <h4>Upload Admins</h4>
+                    <p>Import admin data</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- View Data Tab -->
+    <div class="tab-pane fade" id="view">
+        <!-- Students Section -->
+        <div class="data-section student-data">
+            <div class="data-card">
+                <div class="data-header">
+                    <div>
+                        <i class="fas fa-user-graduate me-3"></i>
+                        <h4>Students</h4>
+                    </div>
+                    <span class="data-count">{{ students|length }} Students</span>
+                </div>
+                <div class="data-body">
+                    <div class="table-container">
+                        {% if students %}
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Username</th>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Branch</th>
+                                    <th>Semester</th>
+                                    <th>Roll Number</th>
+                                    <th>Academic Year</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for student in students %}
+                                <tr>
+                                    <td>{{ student.id }}</td>
+                                    <td>{{ student.username }}</td>
+                                    <td>{{ student.name }}</td>
+                                    <td>{{ student.email }}</td>
+                                    <td>{{ student.branch or '-' }}</td>
+                                    <td>{{ student.semester }}</td>
+                                    <td>{{ student.roll_number or '-' }}</td>
+                                    <td>{{ student.academic_year or '-' }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                        {% else %}
+                        <div class="empty-data">
+                            <i class="fas fa-user-graduate"></i>
+                            <h5>No Students Found</h5>
+                            <p>Upload student data using the Upload Data tab</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Teachers Section -->
+        <div class="data-section teacher-data">
+            <div class="data-card">
+                <div class="data-header">
+                    <div>
+                        <i class="fas fa-chalkboard-teacher me-3"></i>
+                        <h4>Teachers</h4>
+                    </div>
+                    <span class="data-count">{{ teachers|length }} Teachers</span>
+                </div>
+                <div class="data-body">
+                    <div class="table-container">
+                        {% if teachers %}
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Username</th>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Subject</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for teacher in teachers %}
+                                <tr>
+                                    <td>{{ teacher.id }}</td>
+                                    <td>{{ teacher.username }}</td>
+                                    <td>{{ teacher.name }}</td>
+                                    <td>{{ teacher.email }}</td>
+                                    <td>{{ teacher.subject or '-' }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                        {% else %}
+                        <div class="empty-data">
+                            <i class="fas fa-chalkboard-teacher"></i>
+                            <h5>No Teachers Found</h5>
+                            <p>Upload teacher data using the Upload Data tab</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Admins Section -->
+        <div class="data-section admin-data">
+            <div class="data-card">
+                <div class="data-header">
+                    <div>
+                        <i class="fas fa-user-cog me-3"></i>
+                        <h4>Admins</h4>
+                    </div>
+                    <span class="data-count">{{ admins|length }} Admins</span>
+                </div>
+                <div class="data-body">
+                    <div class="table-container">
+                        {% if admins %}
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Username</th>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for admin in admins %}
+                                <tr>
+                                    <td>{{ admin.id }}</td>
+                                    <td>{{ admin.username }}</td>
+                                    <td>{{ admin.name }}</td>
+                                    <td>{{ admin.email }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                        {% else %}
+                        <div class="empty-data">
+                            <i class="fas fa-user-cog"></i>
+                            <h5>No Admins Found</h5>
+                            <p>Upload admin data using the Upload Data tab</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Student Upload Modal -->
+<div class="modal fade modal-student" id="studentUploadModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fas fa-user-graduate me-2"></i>Upload Student Data</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="/upload_students" enctype="multipart/form-data">
+                <div class="modal-body">
+                    <div class="file-drop-area" onclick="document.getElementById('studentFile').click()">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        <h5>Click to select Excel file</h5>
+                        <p class="text-muted">Supported: .xlsx, .xls</p>
+                        <input type="file" name="file" id="studentFile" class="d-none" accept=".xlsx, .xls" required>
+                    </div>
+                    <div class="info-box">
+                        <h6>Excel Columns:</h6>
+                        <ul>
+                            <li><strong>Username, Password, Name, Email</strong> (Required)</li>
+                            <li><strong>Branch, Semester, Academic_Year, Roll_Number</strong> (Optional)</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Upload Students</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Teacher Upload Modal -->
+<div class="modal fade modal-teacher" id="teacherUploadModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fas fa-chalkboard-teacher me-2"></i>Upload Teacher Data</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="/upload_teachers" enctype="multipart/form-data">
+                <div class="modal-body">
+                    <div class="file-drop-area" onclick="document.getElementById('teacherFile').click()">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        <h5>Click to select Excel file</h5>
+                        <p class="text-muted">Supported: .xlsx, .xls</p>
+                        <input type="file" name="file" id="teacherFile" class="d-none" accept=".xlsx, .xls" required>
+                                            <div class="file-drop-area" onclick="document.getElementById('teacherFile').click()">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        <h5>Click to select Excel file</h5>
+                        <p class="text-muted">Supported: .xlsx, .xls</p>
+                        <input type="file" name="file" id="teacherFile" class="d-none" accept=".xlsx, .xls" required>
+                    </div>
+                    <div class="info-box">
+                        <h6>Excel Columns:</h6>
+                        <ul>
+                            <li><strong>Username, Password, Name, Email, Subject</strong> (Required)</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-success">Upload Teachers</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Admin Upload Modal -->
+<div class="modal fade modal-admin" id="adminUploadModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fas fa-user-cog me-2"></i>Upload Admin Data</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="/upload_admins" enctype="multipart/form-data">
+                <div class="modal-body">
+                    <div class="file-drop-area" onclick="document.getElementById('adminFile').click()">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        <h5>Click to select Excel file</h5>
+                        <p class="text-muted">Supported: .xlsx, .xls</p>
+                        <input type="file" name="file" id="adminFile" class="d-none" accept=".xlsx, .xls" required>
+                    </div>
+                    <div class="info-box">
+                        <h6>Excel Columns:</h6>
+                        <ul>
+                            <li><strong>Username, Password, Name, Email</strong> (Required)</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-danger">Upload Admins</button>
+                </div>
+            </form>
+        </div>\
+    </div>
+</div>
+{% endblock %}
