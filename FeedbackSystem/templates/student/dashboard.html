@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+
+{% block title %}Student Dashboard{% endblock %}
+
+{% block content %}
+
+<div class="card mb-4" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+    <div class="card-body">
+        <div class="row align-items-center">
+            <div class="col-md-2 text-center">
+                <i class="fas fa-user-graduate fa-5x"></i>
+            </div>
+
+            <div class="col-md-10">
+                <h2>Welcome, {{ current_user.name or current_user.username }}</h2>
+
+                <div class="row mt-3">
+                    <div class="col-md-3">
+                        <p><strong>Roll No:</strong> {{ current_user.roll_number or "N/A" }}</p>
+                    </div>
+
+                    <div class="col-md-3">
+                        <p><strong>Branch:</strong> {{ current_user.branch or "N/A" }}</p>
+                    </div>
+
+                    <div class="col-md-3">
+                        <p><strong>Semester:</strong> {{ current_user.semester or "N/A" }}</p>
+                    </div>
+
+                    <div class="col-md-3">
+                        <p><strong>Academic Year:</strong> {{ current_user.academic_year or "N/A" }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<h3><i class="fas fa-chalkboard-teacher"></i> Faculty Feedback</h3>
+<p class="text-muted">Give feedback for each teacher. Each can be submitted once.</p>
+
+
+<!-- ✅ FEEDBACK CLOSED MESSAGE -->
+{% if not is_feedback_open %}
+<div class="alert alert-danger">
+    Feedback submission is currently closed.
+</div>
+{% endif %}
+
+<!-- ✅ TEACHERS LIST -->
+{% if selected_branch and selected_sem %}
+<div class="row mt-4">
+
+    {% for teacher in teachers %}
+    <div class="col-md-4 mb-4">
+        <div class="card h-100 shadow-sm">
+            <div class="card-body">
+
+                <h5 class="card-title text-primary">{{ teacher.subject }}</h5>
+                <hr>
+
+                <p><strong>Teacher:</strong> {{ teacher.teacher_name }}</p>
+                <p><strong>Code:</strong> {{ teacher.subject_code }}</p>
+
+                {% if is_feedback_open %}
+                    <a href="{{ url_for('submit_feedback', mapping_id=teacher.mapping_id) }}"
+                       class="btn btn-success w-100">
+                       Submit Feedback
+                    </a>
+                {% else %}
+                    <button class="btn btn-secondary w-100" disabled>
+                        Feedback Closed
+                    </button>
+                {% endif %}
+
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+
+    {% if not teachers %}
+    <div class="alert alert-warning text-center">
+        No subjects found. Please contact admin.
+    </div>
+    {% endif %}
+
+</div>
+{% endif %}
+
+{% endblock %}

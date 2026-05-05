@@ -1,0 +1,683 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard{% endblock %}
+
+{% block extra_css %}
+<style>
+    .upload-section {
+        padding: 30px;
+    }
+
+    .upload-card {
+        border-radius: 20px;
+        padding: 40px 20px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        border: 3px solid transparent;
+    }
+
+    .upload-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
+    }
+
+    .upload-card i {
+        font-size: 3rem;
+        margin-bottom: 15px;
+    }
+
+    .upload-card h4 {
+        font-size: 1.3rem;
+        margin-bottom: 10px;
+    }
+
+    .student-upload {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+
+    .teacher-upload {
+        background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        color: white;
+    }
+
+    .admin-upload {
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        color: white;
+    }
+
+    .upload-icon {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 20px;
+        background: rgba(255, 255, 255, 0.2);
+    }
+
+    .modal-student .modal-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+
+    .modal-teacher .modal-header {
+        background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        color: white;
+    }
+
+    .modal-admin .modal-header {
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        color: white;
+    }
+
+    .file-drop-area {
+        border: 2px dashed #ccc;
+        border-radius: 15px;
+        padding: 40px;
+        text-align: center;
+        cursor: pointer;
+    }
+
+    .file-drop-area:hover {
+        border-color: #667eea;
+        background: #f8f9ff;
+    }
+
+    .file-drop-area i {
+        font-size: 3rem;
+        color: #667eea;
+        margin-bottom: 15px;
+    }
+
+    .info-box {
+        background: #f8f9fa;
+        border-radius: 15px;
+        padding: 20px;
+        margin-top: 20px;
+    }
+
+    .info-box ul {
+        margin: 0;
+        padding-left: 20px;
+    }
+
+    .info-box li {
+        color: #666;
+        margin-bottom: 8px;
+    }
+
+    /* View Data Section */
+    .data-section {
+        margin-bottom: 30px;
+    }
+
+    .data-card {
+        border-radius: 15px;
+        overflow: hidden;
+        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .data-header {
+        padding: 20px;
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .data-header i {
+        font-size: 1.5rem;
+    }
+
+    .data-header h4 {
+        margin: 0;
+    }
+
+    .student-data .data-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+
+    .teacher-data .data-header {
+        background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+    }
+
+    .admin-data .data-header {
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    }
+
+    .data-body {
+        padding: 20px;
+        background: white;
+    }
+
+    .data-count {
+        background: rgba(255, 255, 255, 0.2);
+        padding: 5px 15px;
+        border-radius: 20px;
+        font-size: 0.9rem;
+    }
+
+    .table-container {
+        max-height: 400px;
+        overflow-y: auto;
+    }
+
+    .table {
+        margin-bottom: 0;
+    }
+
+    .table th {
+        background: #f8f9fa;
+        font-weight: 600;
+        position: sticky;
+        top: 0;
+    }
+
+    .empty-data {
+        text-align: center;
+        padding: 40px;
+        color: #999;
+    }
+
+    .empty-data i {
+        font-size: 3rem;
+        margin-bottom: 15px;
+        opacity: 0.5;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<h2 class="mb-4"><i class="fas fa-user-cog"></i> Admin Dashboard</h2>
+<div class="card mb-4">
+    <div class="card-body">
+        <h5 class="mb-3"><i class="fas fa-clock me-2"></i>Set Feedback Time Window</h5>
+
+        <form method="POST" action="{{ url_for('set_feedback_window') }}" class="row g-3">
+            <div class="col-md-5">
+                <label class="form-label">Start Time</label>
+                <input type="datetime-local" name="start_time" class="form-control" required>
+            </div>
+
+            <div class="col-md-5">
+                <label class="form-label">End Time</label>
+                <input type="datetime-local" name="end_time" class="form-control" required>
+            </div>
+
+            <div class="col-md-2 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary w-100">Save</button>
+            </div>
+        </form>
+
+        {% if current_feedback_window %}
+        <div class="alert alert-info mt-3 mb-0">
+            <strong>Current Feedback Window:</strong>
+            {{ current_feedback_window.start_time.strftime('%d-%m-%Y %H:%M') }}
+            to
+            {{ current_feedback_window.end_time.strftime('%d-%m-%Y %H:%M') }}
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+
+<!-- Tabs -->
+<ul class="nav nav-tabs mb-3">
+
+    <li class="nav-item">
+        <button
+            class="nav-link {% if request.args.get('tab') != 'feedback' and request.args.get('tab') != 'view' %}active{% endif %}"
+            data-bs-toggle="tab" data-bs-target="#upload">
+            <i class="fas fa-file-upload me-2"></i>Upload Data
+        </button>
+    </li>
+
+    <li class="nav-item">
+        <button class="nav-link {% if request.args.get('tab') == 'view' %}active{% endif %}" data-bs-toggle="tab"
+            data-bs-target="#view">
+            <i class="fas fa-eye me-2"></i>View Data
+        </button>
+    </li>
+
+    <li class="nav-item">
+        <button class="nav-link {% if request.args.get('tab') == 'feedback' %}active{% endif %}" data-bs-toggle="tab"
+            data-bs-target="#feedback">
+            <i class="fas fa-comments me-2"></i>View Feedback
+        </button>
+    </li>
+</ul>
+
+<div class="tab-content">
+
+    <!-- Upload Tab -->
+    <div class="tab-pane fade {% if request.args.get('tab') != 'feedback' and request.args.get('tab') != 'view' %}show active{% endif %}"
+        id="upload">
+        <div class="row">
+            <div class="col-md-4 mb-4">
+                <div class="upload-card student-upload" data-bs-toggle="modal" data-bs-target="#studentUploadModal">
+                    <div class="upload-icon"><i class="fas fa-user-graduate"></i></div>
+                    <h4>Upload Students</h4>
+                    <p>Import student data</p>
+                </div>
+            </div>
+
+            <div class="col-md-4 mb-4">
+                <div class="upload-card teacher-upload" data-bs-toggle="modal" data-bs-target="#teacherUploadModal">
+                    <div class="upload-icon"><i class="fas fa-chalkboard-teacher"></i></div>
+                    <h4>Upload Teachers</h4>
+                    <p>Import teacher data</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- View Data Tab -->
+    <div class="tab-pane fade {% if request.args.get('tab') == 'view' %}show active{% endif %}" id="view">
+
+        <!-- Students Section -->
+        <div class="data-section student-data">
+            <div class="data-card">
+                <div class="data-header">
+                    <div>
+                        <i class="fas fa-user-graduate me-3"></i>
+                        <h4>Student Files</h4>
+                    </div>
+                    <span class="data-count">{{ students_files|length }} Files</span>
+                </div>
+                <div class="data-body">
+                    {% if students_files %}
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Filename</th>
+                                <th>Uploaded At</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for file in students_files %}
+                            <tr>
+                                <td>{{ file.filename }}</td>
+                                <td>{{ file.uploaded_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                                <td>
+                                    <a href="{{ url_for('view_file', file_id=file.id) }}"
+                                        class="btn btn-sm btn-primary">
+                                        Open/Edit
+                                    </a>
+                                    <a href="{{ url_for('delete_file', file_id=file.id) }}"
+                                        class="btn btn-sm btn-danger"
+                                        onclick="return confirm('Delete this file?')">Delete</a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    {% else %}
+                    <div class="empty-data">
+                        <i class="fas fa-user-graduate"></i>
+                        <h5>No Student Files Found</h5>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Teachers Section -->
+        <div class="data-section teacher-data">
+            <div class="data-card">
+                <div class="data-header">
+                    <div>
+                        <i class="fas fa-chalkboard-teacher me-3"></i>
+                        <h4>Teacher Files</h4>
+                    </div>
+                    <span class="data-count">{{ teachers_files|length }} Files</span>
+                </div>
+                <div class="data-body">
+                    {% if teachers_files %}
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Filename</th>
+                                <th>Uploaded At</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for file in teachers_files %}
+                            <tr>
+                                <td>{{ file.filename }}</td>
+                                <td>{{ file.uploaded_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                                <td>
+                                    <a href="{{ url_for('view_file', file_id=file.id) }}"
+                                        class="btn btn-sm btn-primary">
+                                        Open/Edit
+                                    </a>
+                                    <a href="{{ url_for('delete_file', file_id=file.id) }}"
+                                        class="btn btn-sm btn-danger"
+                                        onclick="return confirm('Delete this file?')">Delete</a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    {% else %}
+                    <div class="empty-data">
+                        <i class="fas fa-chalkboard-teacher"></i>
+                        <h5>No Teacher Files Found</h5>
+                        <p>Upload teacher data using the Upload Data tab</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Feedback Section -->
+    <!-- Feedback Tab -->
+    <div class="tab-pane fade {% if request.args.get('tab') == 'feedback' %}show active{% endif %}" id="feedback">
+
+        <div class="data-section">
+            <div class="data-card">
+
+                <div class="data-header" style="background: linear-gradient(135deg, #ff9966 0%, #ff5e62 100%);">
+                    <div>
+                        <i class="fas fa-comments me-3"></i>
+                        <h4>Student Feedbacks</h4>
+                    </div>
+                    <span class="data-count">{{ feedbacks|length }} Feedbacks</span>
+                </div>
+
+                <div class="data-body">
+
+                    <!-- Filter Form -->
+                    <form method="GET" action="{{ url_for('admin_dashboard') }}" class="row g-3 mb-3">
+                        <input type="hidden" name="tab" value="feedback">
+
+                        <div class="col-md-3">
+                            <label class="form-label">Branch</label>
+                            <select name="branch" class="form-select">
+                                <option value="">All Branches</option>
+                                {% for b in branches %}
+                                <option value="{{ b }}" {% if b==feedback_branch %}selected{% endif %}>{{ b }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="col-md-3">
+                            <label class="form-label">Semester</label>
+                            <select name="semester" class="form-select">
+                                <option value="">All Semesters</option>
+                                {% for s in range(1, 9) %}
+                                <option value="{{ s }}" {% if s==feedback_semester %}selected{% endif %}>{{ s }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="col-md-3">
+                            <label>Subject Code</label>
+                            <select name="subject_code" class="form-select">
+                                <option value="">All Subject Codes</option>
+                                {% for subject in subjects %}
+                                <option value="{{ subject.code }}" {% if feedback_subject_code==subject.code
+                                    %}selected{% endif %}>
+                                    {{ subject.code }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="col-md-3">
+                            <label class="form-label">Teacher</label>
+                            <select name="teacher" class="form-select">
+                                <option value="">All Teachers</option>
+                                {% for t in teachers %}
+                                <option value="{{ t.id }}" {% if t.id==feedback_teacher %}selected{% endif %}>
+                                    {{ t.name or t.username }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-12 d-flex justify-content-end gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-filter me-1"></i> Apply Filter
+                            </button>
+
+                            <a href="{{ url_for('admin_dashboard', tab='feedback') }}" class="btn btn-secondary">
+                                Reset
+                            </a>
+                        </div>
+                    </form>
+
+                    <!-- Export Button -->
+                    <div class="mb-3 text-end">
+                        <a href="{{ url_for('export_admin_feedbacks', branch=feedback_branch, semester=feedback_semester, subject=feedback_subject, teacher=feedback_teacher) }}"
+                            class="btn btn-success">
+                            <i class="fas fa-file-excel me-1"></i> Export Excel
+                        </a>
+                    </div>
+
+                    {% if feedbacks %}
+                    <div class="table-container">
+                        <table class="table table-bordered table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Student</th>
+                                    <th>Roll No</th>
+                                    <th>Teacher</th>
+                                    <th>Subject</th>
+                                    <th>Subject Code</th>
+                                    <th>Branch</th>
+                                    <th>Semester</th>
+                                    <th>Academic Year</th>
+                                    <th>Timestamp</th>
+                                    <th>Q1</th>
+                                    <th>Q2</th>
+                                    <th>Q3</th>
+                                    <th>Q4</th>
+                                    <th>Q5</th>
+                                    <th>Q6</th>
+                                    <th>Q7</th>
+                                    <th>Q8</th>
+                                    <th>Q9</th>
+                                    <th>Q10</th>
+                                    <th>Q11</th>
+                                    <th>Q12</th>
+                                    <th>Total</th>
+                                    <th>Average</th>
+                                </tr>
+                            </thead>
+
+                            <tbody>
+                                {% for f in feedbacks %}
+                                <tr>
+                                    <td>{{ f.student.name or f.student.username }}</td>
+                                    <td>{{ f.student.roll_number }}</td>
+                                    <td>{{ f.teacher.name or f.teacher.username }}</td>
+                                    <td>{{ f.subject }}</td>
+                                    <td>{{ f.subject_code or 'N/A' }}</td>
+                                    <td>{{ f.student.branch }}</td>
+                                    <td>{{ f.semester }}</td>
+                                    <td>{{ f.academic_year or "N/A" }}</td>
+                                    <td>{{ f.created_at.strftime('%Y-%m-%d %H:%M') if f.created_at else "N/A" }}</td>
+                                    <td>{{ f.q1 }}</td>
+                                    <td>{{ f.q2 }}</td>
+                                    <td>{{ f.q3 }}</td>
+                                    <td>{{ f.q4 }}</td>
+                                    <td>{{ f.q5 }}</td>
+                                    <td>{{ f.q6 }}</td>
+                                    <td>{{ f.q7 }}</td>
+                                    <td>{{ f.q8 }}</td>
+                                    <td>{{ f.q9 }}</td>
+                                    <td>{{ f.q10 }}</td>
+                                    <td>{{ f.q11 }}</td>
+                                    <td>{{ f.q12 }}</td>
+                                    <td><strong>{{ f.total }}</strong></td>
+                                    <td>{{ "%.2f"|format(f.total / 12) if f.total else "0.00" }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="empty-data">
+                        <i class="fas fa-comments"></i>
+                        <h5>No Feedback Found</h5>
+                    </div>
+                    {% endif %}
+
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Student Upload Modal -->
+    <div class="modal fade modal-student" id="studentUploadModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fas fa-user-graduate me-2"></i>Upload Student Data</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <form method="POST" action="/upload_students" enctype="multipart/form-data">
+                    <div class="modal-body">
+                        <div class="file-drop-area" onclick="document.getElementById('studentFile').click()">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                            <h5 id="studentFileLabel">Click to select Excel file</h5>
+                            <p class="text-muted">Supported: .xlsx, .xls</p>
+                            <input type="file" name="file" id="studentFile" class="d-none" accept=".xlsx, .xls"
+                                required>
+                        </div>
+                        <div class="info-box">
+                            <h6>Excel Columns:</h6>
+                            <ul>
+                                <li><strong>Username, Password, Name, Email, Roll Number, Branch, Semester, Academic
+                                        Year</strong> (Required)</li>
+                            </ul>
+
+                            <p style="margin-top:10px; font-size:14px; color:#555;">
+                                ⚠️ Make sure:
+                                <br>• Column names match exactly (case-insensitive allowed)
+                                <br>• Do not leave any field empty
+                                <br>• Semester can be 1, 2, 3 or 1st, 2nd, 3rd etc.
+                                <br>• Roll Number must be unique for each student
+                            </p>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Upload Students</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Teacher Upload Modal -->
+    <div class="modal fade modal-teacher" id="teacherUploadModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fas fa-chalkboard-teacher me-2"></i>Upload Teacher Data</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <form method="POST" action="/upload_teachers" enctype="multipart/form-data">
+                    <div class="modal-body">
+                        <div class="file-drop-area" onclick="document.getElementById('teacherFile').click()">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                            <h5 id="teacherFileLabel">Click to select Excel file</h5>
+                            <p class="text-muted">Supported: .xlsx, .xls</p>
+                            <input type="file" name="file" id="teacherFile" class="d-none" accept=".xlsx, .xls"
+                                required>
+                        </div>
+
+                        <div class="info-box">
+                            <h6>Excel Columns:</h6>
+                            <ul>
+                                <li><strong>Username, Password, Name, Email, Subject, Branch, Subject Code</strong>
+                                    (Required)</li>
+                            </ul>
+
+                            <p style="margin-top:10px; font-size:14px; color:#555;">
+                                ⚠️ Make sure:
+                                <br>• Column names match exactly (case-insensitive allowed)
+                                <br>• Do not leave any field empty
+                                <br>• Email must be unique for each teacher
+                                <br>• Subject and Branch must match student data
+                            </p>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-success">Upload Teachers</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Admin Upload Modal -->
+    <div class="modal fade modal-admin" id="adminUploadModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fas fa-user-cog me-2"></i>Upload Admin Data</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <form method="POST" action="/upload_admins" enctype="multipart/form-data">
+                    <div class="modal-body">
+                        <div class="file-drop-area" onclick="document.getElementById('adminFile').click()">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                            <h5>Click to select Excel file</h5>
+                            <p class="text-muted">Supported: .xlsx, .xls</p>
+                            <input type="file" name="file" id="adminFile" class="d-none" accept=".xlsx, .xls" required>
+                        </div>
+                        <div class="info-box">
+                            <h6>Excel Columns:</h6>
+                            <ul>
+                                <li><strong>Username, Password, Sub_role, Branch, Name, Email</strong> (Required)</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-danger">Upload Admins</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    const studentInput = document.getElementById("studentFile");
+    const teacherInput = document.getElementById("teacherFile");
+
+    if (studentInput) {
+        studentInput.addEventListener("change", function () {
+            const file = this.files[0];
+            document.getElementById("studentFileLabel").innerText = file ? file.name : "Click to select Excel file";
+        });
+    }
+
+    if (teacherInput) {
+        teacherInput.addEventListener("change", function () {
+            const file = this.files[0];
+            document.getElementById("teacherFileLabel").innerText = file ? file.name : "Click to select Excel file";
+        });
+    }
+
+});
+</script>
+
+</div>
+</div>
+{% endblock %}

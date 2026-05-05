@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Spreadsheet</title>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/handsontable/dist/handsontable.full.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/handsontable/dist/handsontable.full.min.js"></script>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: white;
+            color: black;
+        }
+
+        .top-bar {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        #sheet {
+            width: 100%;
+            height: 700px;
+            background: white;
+        }
+
+        button,
+        a.btn-link {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            border: 1px solid #ccc;
+            background: white;
+            color: black;
+            text-decoration: none;
+            border-radius: 6px;
+        }
+
+        button:hover,
+        a.btn-link:hover {
+            background: #f2f2f2;
+        }
+
+        .handsontable td,
+        .handsontable th {
+            background: white !important;
+            color: black !important;
+        }
+
+        .handsontable .htCore thead th {
+            background: #f8f8f8 !important;
+            color: black !important;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="top-bar">
+        <button type="button" onclick="saveSheet()">Save</button>
+
+        <a class="btn-link" href="{{ url_for('download_excel_file', file_id=file.id) }}">
+            Export Excel
+        </a>
+
+        <form action="{{ url_for('sync_to_db', file_id=file.id) }}" method="POST" style="display:inline;">
+            <button type="submit">Sync to DB</button>
+        </form>
+    </div>
+
+    <div id="sheet"></div>
+
+    <script>
+        var data = JSON.parse('{{ data | tojson | safe }}');
+        var columns = JSON.parse('{{ columns | tojson | safe }}');
+
+        const container = document.getElementById("sheet");
+
+        const hot = new Handsontable(container, {
+            data: data,
+            rowHeaders: true,
+            colHeaders: columns,
+            contextMenu: true,
+            dropdownMenu: true,
+            filters: true,
+            stretchH: "all",
+            manualRowResize: true,
+            manualColumnResize: true,
+            licenseKey: "non-commercial-and-evaluation"
+        });
+
+        function saveSheet() {
+            const rows = hot.getData();
+
+            fetch(`/save_file/{{ file.id }}`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    rows: rows,
+                    columns: columns
+                })
+            })
+            .then(res => res.json())
+            .then(result => {
+                alert(result.message);
+            })
+            .catch(err => {
+                alert("Save failed: " + err);
+            });
+        }
+        // Is function ko spreadsheet.html ke script tag mein replace karein
+function syncToDatabase() {
+    if(!confirm("Kya aap is data ko database mein sync karna chahte hain?")) return;
+
+    // Button ko disable karein taaki baar-baar click na ho
+    const syncBtn = event.target;
+    syncBtn.disabled = true;
+    syncBtn.innerText = "Syncing...";
+
+    fetch(`/sync_to_db/{{ file.id }}`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        }
+    })
+    .then(res => res.json())
+    .then(result => {
+        alert(result.message);
+        if(result.success) {
+            // Success hone par seedha dashboard par bhej dega
+            window.location.href = "{{ url_for('admin_dashboard') }}";
+        } else {
+            syncBtn.disabled = false;
+            syncBtn.innerText = "Sync to DB";
+        }
+    })
+    .catch(err => {
+        alert("Sync fail ho gaya: " + err);
+        syncBtn.disabled = false;
+        syncBtn.innerText = "Sync to DB";
+    });
+}
+
+        document.addEventListener("keydown", function (e) {
+            if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "s") {
+                e.preventDefault();
+                saveSheet();
+            }
+        });
+    </script>
+
+</body>
+</html>

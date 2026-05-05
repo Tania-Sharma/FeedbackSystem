@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container mt-5">
+    <h2>Select Branch & Semester</h2>
+
+    <form method="POST" action="{{ url_for('set_selection') }}">
+        
+        <div class="mb-3">
+            <label>Branch</label>
+            <select name="branch" class="form-control" required>
+                <option value="">Select Branch</option>
+                {% for b in branches %}
+                    <option value="{{ b }}">{{ b }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="mb-3">
+            <label>Semester</label>
+            <select name="semester" class="form-control" required>
+                <option value="">Select Semester</option>
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+                <option value="6">6</option>
+                <option value="7">7</option>
+                <option value="8">8</option>
+            </select>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Show</button>
+
+    </form>
+</div>
+
+{% endblock %}
